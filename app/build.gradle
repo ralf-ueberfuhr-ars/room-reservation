@@ -1,0 +1,19 @@
+group 'de.ars.room-reservation'
+version '1.0-SNAPSHOT'
+
+subprojects {
+    def javaProjectsDefaults = {
+        java {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+        repositories {
+            mavenCentral()
+        }
+        dependencies {
+            compileOnly 'org.projectlombok:lombok:1.18.28'
+            annotationProcessor 'org.projectlombok:lombok:1.18.28'
+        }
+    }
+    pluginManager.withPlugin("java", javaProjectsDefaults)
+}
