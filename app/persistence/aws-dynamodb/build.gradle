@@ -1,0 +1,14 @@
+apply plugin: 'java'
+
+jar {
+    archiveBaseName  = 'room-reservation-persistence-dynamodb'
+}
+
+dependencies {
+
+    implementation(platform("software.amazon.awssdk:bom:2.20.125"))
+    implementation("software.amazon.awssdk:dynamodb-enhanced")
+
+    implementation project(':domain')
+
+}
