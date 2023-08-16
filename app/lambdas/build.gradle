@@ -22,3 +22,13 @@ dependencies {
     implementation project(':domain')
 
 }
+
+task packageLayerLib(type: Zip) {
+    into('java/lib') {
+        from(configurations.runtimeClasspath) {
+            exclude "**/${rootProject.name}-*"
+        }
+    }
+}
+
+build.dependsOn packageLayerLib

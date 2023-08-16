@@ -22,6 +22,7 @@ import java.util.stream.Stream;
  * Finds a room's reservations.
  */
 @Log4j2
+@SuppressWarnings("unused") // invoked by AWS Lambda
 public class FindRoomReservationsHandler
         implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
 
@@ -37,13 +38,18 @@ public class FindRoomReservationsHandler
         final var room = input.getPathParameters().get(ROOM_PATH_PARAMETER);
         if (null == room) {
             log.debug("BAD REQUEST: No room was specified.");
+            log.debug(() -> {
+                // ... complex
+                return "...";
+            });
             return APIGatewayV2HTTPResponse.builder()
                     .withStatusCode(400)
                     .withBody("No room was specified.")
                     .build();
         }
         final var reservations = Optional
-                .ofNullable(input.getQueryStringParameters().get(DATE_REQ_PARAMETER))
+                .ofNullable(input.getQueryStringParameters()) // can be null, if no parameter is sent
+                .map(params -> params.get(DATE_REQ_PARAMETER))
                 .map(LocalDate::parse)
                 .map(date -> findReservationByDate(room, date))
                 .orElse(findReservations(room))

@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class DynamoDBRoomReservationSink implements RoomReservationSink {
 
-    private static final String TABLE = "reservations";
+    private static final String TABLE = "room-reservations";
     private static final TableSchema<RoomReservationEntity> schema = TableSchema.fromBean(RoomReservationEntity.class);
 
     private static final Function<DynamoDbEnhancedClient, DynamoDbTable<RoomReservationEntity>> table
@@ -66,7 +66,11 @@ public class DynamoDBRoomReservationSink implements RoomReservationSink {
                 .scan(
                         ScanEnhancedRequest.builder()
                                 .filterExpression(Expression.builder()
-                                        .expression("room = :room and date = :date")
+                                        // date is a reserved keyword
+                                        .expression("room = :room and #date = :date")
+                                        .expressionNames(Map.of(
+                                                "#date", "date"
+                                        ))
                                         .expressionValues(Map.of(
                                                 ":room", AttributeValue.fromS(room),
                                                 ":date", AttributeValue.fromS(date.format(DateTimeFormatter.ISO_DATE))

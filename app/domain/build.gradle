@@ -3,3 +3,11 @@ apply plugin: 'java'
 jar {
     archiveBaseName  = 'room-reservation-domain'
 }
+
+task packageLayerLib(type: Zip) {
+    into('java/lib') {
+        from(jar)
+    }
+}
+
+build.dependsOn packageLayerLib
