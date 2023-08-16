@@ -9,6 +9,7 @@ import lombok.extern.log4j.Log4j2;
 import java.time.LocalDate;
 
 @Log4j2
+@SuppressWarnings("unused") // invoked by AWS Lambda
 public class CreateRoomReservationHandler
         extends AbstractJacksonRequestHandler<RoomReservationRequest, RoomReservationResult> {
 
