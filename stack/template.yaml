@@ -57,7 +57,7 @@ Resources:
     Properties:
       CodeUri: s3://room-reservation/app/lambdas.jar
       Handler: de.ars.rooms.reservations.lambda.CreateRoomReservationHandler::handleRequest
-      Runtime: 'Java 17'
+      Runtime: java17
       Timeout: 15
       MemorySize: 512
       Environment:
