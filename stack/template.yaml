@@ -20,7 +20,7 @@ Globals:
 Resources:
   # API Gateway
   RoomsApi:
-    Type: AWS::Serverless::Api
+    Type: AWS::Serverless::HttpApi
     Properties:
       Name: !Sub "${NameSpace}api"
       StageName: !Ref StageName
