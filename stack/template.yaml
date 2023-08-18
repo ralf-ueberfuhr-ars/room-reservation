@@ -30,6 +30,8 @@ Resources:
         - AttributeName: roomNr
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+      Metadata:
+        SamResourceId: RoomTable
   RoomReservationsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -46,7 +48,25 @@ Resources:
         - AttributeName: uuid
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+      Metadata:
+        SamResourceId: RoomReservationsTable
       # TODO create GSI
   # Lambda Functions
-#  CreateRoomReservation:
-#    Type:
+  CreateRoomReservation:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://room-reservation/app/lambdas.jar
+      Handler: de.ars.rooms.reservations.lambda.CreateRoomReservationHandler::handleRequest
+      Runtime: 'Java 17'
+      Timeout: 15
+      MemorySize: 512
+      Environment:
+        Variables:
+          ROOM_RESERVATIONS_TABLE:
+            Ref: RoomReservationsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              Ref: RoomReservationsTable
+    Metadata:
+      SamResourceId: CreateRoomReservation
