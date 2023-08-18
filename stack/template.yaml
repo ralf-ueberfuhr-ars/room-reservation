@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: 2010-09-09
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-aws-serverless.html
+Transform: AWS::Serverless-2016-10-31
+Description: Room Reservation Services
+Parameters:
+  NameSpace:
+    Type: String
+    Description: Prefix for all services that are created by this stack
+    Default: rrapp-
+Globals:
+  Api:
+    Cors:
+      AllowOrigin: '''*'''
+      AllowHeaders: '''Content-Type'''
+      AllowMethods: '''GET,OPTIONS'''
+Resources:
+  # DynamoDB tables
+  #  - TODO: initialize data (see Serverlesspresso: FillDatabasesCustomResource)
+  RoomTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: ${NameSpace}rooms
+      AttributeDefinitions:
+        - AttributeName: roomNr
+          AttributeType: S
+#        - AttributeName: description
+#          AttributeType: S
+      KeySchema:
+        - AttributeName: roomNr
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+  RoomReservationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: ${NameSpace}room-reservations
+      AttributeDefinitions:
+        - AttributeName: uuid
+          AttributeType: S
+#        - AttributeName: date
+#          AttributeType: S
+#        - AttributeName: room
+#          AttributeType: S
+      KeySchema:
+        - AttributeName: uuid
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      # TODO create GSI
+  # Lambda Functions
+  # - TODO: set tables as env params (see Serverlesspresso: ConfigChangedFunction)
