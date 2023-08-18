@@ -130,7 +130,6 @@ Resources:
     Properties:
       Name: !Sub "${NameSpace}api"
       ProtocolType: HTTP
-      BasePath: /api/v1
   FindReservationsIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
@@ -142,7 +141,7 @@ Resources:
     Properties:
       ApiId: !Ref RoomsApi
       OperationName: FindReservations
-      RouteKey: GET /rooms/{room}/reservations
+      RouteKey: GET /api/v1/rooms/{room}/reservations
       Target: !Join
         - /
         - - integrations
