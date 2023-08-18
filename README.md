@@ -1,6 +1,7 @@
 # Room Reservation
 
-[![Application Code (CI)](https://github.com/ralf-ueberfuhr-ars/room-reservation/actions/workflows/gradle.yml/badge.svg)](https://github.com/ralf-ueberfuhr-ars/room-reservation/actions/workflows/gradle.yml)
+[![Application Code (CI)](https://github.com/ralf-ueberfuhr-ars/room-reservation/actions/workflows/app-ci.yml/badge.svg)](https://github.com/ralf-ueberfuhr-ars/room-reservation/actions/workflows/app-ci.yml)
+[![Stack (CI)](https://github.com/ralf-ueberfuhr-ars/room-reservation/actions/workflows/stack-ci.yml/badge.svg)](https://github.com/ralf-ueberfuhr-ars/room-reservation/actions/workflows/stack-ci.yml)
 
 This is a small sample for a room reservation service that is implemented on top of the AWS stack. We use
 
