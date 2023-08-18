@@ -12,27 +12,31 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 public class DynamoDBRoomReservationSink implements RoomReservationSink {
 
-    private static final String TABLE = "room-reservations";
+    private static final String ENV_ROOM_RESERVATIONS_TABLE = "ROOM_RESERVATIONS_TABLE";
+    private static final String DEFAULT_ROOM_RESERVATIONS_TABLE = "room-reservations";
     private static final TableSchema<RoomReservationEntity> schema = TableSchema.fromBean(RoomReservationEntity.class);
 
-    private static final Function<DynamoDbEnhancedClient, DynamoDbTable<RoomReservationEntity>> table
-            = db -> db.table(TABLE, schema);
-
     private final DynamoDbEnhancedClient db;
+    private final String tableName;
     private final RoomReservationEntityMapper mapper;
 
     @SuppressWarnings("unused") // Java ServiceLoader SPI
     public DynamoDBRoomReservationSink() {
         this(
                 DynamoDbEnhancedClient.create(),
+                Optional.ofNullable(System.getenv(ENV_ROOM_RESERVATIONS_TABLE))
+                        .orElse(DEFAULT_ROOM_RESERVATIONS_TABLE),
                 new RoomReservationEntityMapper()
         );
+    }
+
+    protected DynamoDbTable<RoomReservationEntity> getTable() {
+        return this.db.table(this.tableName, schema);
     }
 
     @Override
@@ -43,18 +47,17 @@ public class DynamoDBRoomReservationSink implements RoomReservationSink {
                 room,
                 date
         );
-        table.apply(db).putItem(mapper.map(result));
+        getTable().putItem(mapper.map(result));
         return result;
     }
 
     @Override
     public Optional<RoomReservation> findReservation(UUID uuid) {
-        final var entity = table.apply(db)
-                .getItem(
-                        Key.builder()
-                                .partitionValue(uuid.toString())
-                                .build()
-                );
+        final var entity = getTable().getItem(
+                Key.builder()
+                        .partitionValue(uuid.toString())
+                        .build()
+        );
         return Optional.ofNullable(entity)
                 .map(mapper::map);
     }
@@ -62,8 +65,7 @@ public class DynamoDBRoomReservationSink implements RoomReservationSink {
     @Override
     public Optional<RoomReservation> findReservation(String room, LocalDate date) {
         // TODO create a global secondary index (GSI) to directly query on
-        return table.apply(db)
-                .scan(
+        return getTable().scan(
                         ScanEnhancedRequest.builder()
                                 .filterExpression(Expression.builder()
                                         // date is a reserved keyword
@@ -87,8 +89,7 @@ public class DynamoDBRoomReservationSink implements RoomReservationSink {
     @Override
     public Stream<RoomReservation> findReservations(String room) {
         // TODO create a global secondary index (GSI) to directly query on
-        return table.apply(db)
-                .scan(
+        return getTable().scan(
                         ScanEnhancedRequest.builder()
                                 .filterExpression(Expression.builder()
                                         .expression("room = :room")
