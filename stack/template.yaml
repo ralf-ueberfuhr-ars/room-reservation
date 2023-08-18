@@ -48,4 +48,5 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       # TODO create GSI
   # Lambda Functions
-  # - TODO: set tables as env params (see Serverlesspresso: ConfigChangedFunction)
+#  CreateRoomReservation:
+#    Type:
