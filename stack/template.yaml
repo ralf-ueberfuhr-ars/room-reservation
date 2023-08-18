@@ -153,10 +153,6 @@ Resources:
       FunctionName: !Ref "FindRoomReservationFromApi"
       Action: "lambda:InvokeFunction"
       Principal: "apigateway.amazonaws.com"
-      SourceArn:
-        Fn::GetAtt:
-          - "FindReservationsIntegration"
-          - "Arn"
   FindReservationsRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
