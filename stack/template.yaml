@@ -55,6 +55,7 @@ Resources:
   CreateRoomReservation:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: ${NameSpace}room-reservation-create
       CodeUri: s3://room-reservation/app/lambdas.jar
       Handler: de.ars.rooms.reservations.lambda.CreateRoomReservationHandler::handleRequest
       Runtime: java17
