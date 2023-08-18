@@ -3,10 +3,10 @@ name: Application Code (CI)
 on:
   push:
     branches: [ "main" ]
-    paths: ["app"]
+    paths: ["app/**"]
   pull_request:
     branches: [ "main" ]
-    paths: ["app"]
+    paths: ["app/**"]
 
 permissions:
   contents: read
