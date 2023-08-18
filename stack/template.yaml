@@ -136,7 +136,7 @@ Resources:
         FindRoomReservationsApiEvent:
           Type: Api
           Properties:
-            RestApiId: !Ref RoomsApi
+            ApiId: !Ref RoomsApi
             Path: /api/v1/rooms/{room}/reservations
             Method: GET
     Metadata:
