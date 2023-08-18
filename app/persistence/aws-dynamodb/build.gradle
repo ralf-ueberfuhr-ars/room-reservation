@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 jar {
-    archiveBaseName  = 'room-reservation-persistence-dynamodb'
+    archiveBaseName  = 'persistence-aws-dynamodb'
 }
 
 dependencies {
@@ -13,7 +13,8 @@ dependencies {
 
 }
 
-task packageLayerLib(type: Zip) {
+tasks.register('packageLayerLib', Zip) {
+    archiveFileName = 'persistence-aws-dynamodb-layer.zip'
     into('java/lib') {
         from(jar)
         from(configurations.runtimeClasspath) {

@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 jar {
-    archiveBaseName  = 'room-reservation-lambda'
+    archiveBaseName  = 'lambdas'
 }
 
 dependencies {
@@ -23,7 +23,8 @@ dependencies {
 
 }
 
-task packageLayerLib(type: Zip) {
+tasks.register('packageLayerLib', Zip) {
+    archiveFileName = 'lambdas-deps-layer.zip'
     into('java/lib') {
         from(configurations.runtimeClasspath) {
             exclude "**/${rootProject.name}-*"

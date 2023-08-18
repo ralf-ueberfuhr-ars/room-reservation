@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
 
@@ -24,7 +28,8 @@ jobs:
     - name: Build with Gradle
       uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
       with:
-        arguments: build
+        gradle-version: 8.2.1
+        arguments: -b 'app/build.gradle' build
     - name: Collect files for S3 upload
       run: mkdir 'app/.publish-s3' && find 'app' -type f \( -name '*.jar' -o -name '*.zip' \) -exec cp -t 'app/.publish-s3' {} +
     - name: Upload files to S3
