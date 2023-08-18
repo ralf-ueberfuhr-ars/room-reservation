@@ -27,12 +27,7 @@ public class DynamoDBRoomReservationSink implements RoomReservationSink {
 
     @SuppressWarnings("unused") // Java ServiceLoader SPI
     public DynamoDBRoomReservationSink() {
-        this(
-                DynamoDbEnhancedClient.create(),
-                Optional.ofNullable(System.getenv(ENV_ROOM_RESERVATIONS_TABLE))
-                        .orElse(DEFAULT_ROOM_RESERVATIONS_TABLE),
-                new RoomReservationEntityMapper()
-        );
+        this(DynamoDbEnhancedClient.create(), Optional.ofNullable(System.getenv(ENV_ROOM_RESERVATIONS_TABLE)).orElse(DEFAULT_ROOM_RESERVATIONS_TABLE), new RoomReservationEntityMapper());
     }
 
     protected DynamoDbTable<RoomReservationEntity> getTable() {
@@ -42,65 +37,29 @@ public class DynamoDBRoomReservationSink implements RoomReservationSink {
     @Override
     public RoomReservation insertReservation(String room, LocalDate date) {
         // create uuid in DynamoDB is not possible!
-        final var result = new RoomReservation(
-                UUID.randomUUID(),
-                room,
-                date
-        );
+        final var result = new RoomReservation(UUID.randomUUID(), room, date);
         getTable().putItem(mapper.map(result));
         return result;
     }
 
     @Override
     public Optional<RoomReservation> findReservation(UUID uuid) {
-        final var entity = getTable().getItem(
-                Key.builder()
-                        .partitionValue(uuid.toString())
-                        .build()
-        );
-        return Optional.ofNullable(entity)
-                .map(mapper::map);
+        final var entity = getTable().getItem(Key.builder().partitionValue(uuid.toString()).build());
+        return Optional.ofNullable(entity).map(mapper::map);
     }
 
     @Override
     public Optional<RoomReservation> findReservation(String room, LocalDate date) {
         // TODO create a global secondary index (GSI) to directly query on
-        return getTable().scan(
-                        ScanEnhancedRequest.builder()
-                                .filterExpression(Expression.builder()
-                                        // date is a reserved keyword
-                                        .expression("room = :room and #date = :date")
-                                        .expressionNames(Map.of(
-                                                "#date", "date"
-                                        ))
-                                        .expressionValues(Map.of(
-                                                ":room", AttributeValue.fromS(room),
-                                                ":date", AttributeValue.fromS(date.format(DateTimeFormatter.ISO_DATE))
-                                        ))
-                                        .build())
-                                .build()
-                )
-                .stream()
-                .flatMap(page -> page.items().stream())
-                .findFirst()
-                .map(mapper::map);
+        return getTable().scan(ScanEnhancedRequest.builder().filterExpression(Expression.builder()
+                // date is a reserved keyword
+                .expression("room = :room and #date = :date").expressionNames(Map.of("#date", "date")).expressionValues(Map.of(":room", AttributeValue.fromS(room), ":date", AttributeValue.fromS(date.format(DateTimeFormatter.ISO_DATE)))).build()).build()).stream().flatMap(page -> page.items().stream()).findFirst().map(mapper::map);
     }
 
     @Override
     public Stream<RoomReservation> findReservations(String room) {
         // TODO create a global secondary index (GSI) to directly query on
-        return getTable().scan(
-                        ScanEnhancedRequest.builder()
-                                .filterExpression(Expression.builder()
-                                        .expression("room = :room")
-                                        .expressionValues(Map.of(
-                                                ":room", AttributeValue.fromS(room)
-                                        ))
-                                        .build())
-                                .build()
-                )
-                .stream()
-                .flatMap(page -> page.items().stream())
-                .map(mapper::map);
+        return getTable().scan(ScanEnhancedRequest.builder().filterExpression(Expression.builder().expression("room = :room").expressionValues(Map.of(":room", AttributeValue.fromS(room))).build()).build()).stream().flatMap(page -> page.items().stream()).map(mapper::map);
     }
+
 }
