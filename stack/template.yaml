@@ -7,10 +7,6 @@ Parameters:
     Type: String
     Description: Prefix for all services that are created by this stack
     Default: rrapp-
-  StageName:
-    Type: String
-    Description: The name of the stage is the first path segment in the Uniform Resource Identifier (URI) of a call to API Gateway
-    Default: dev
 Globals:
   Api:
     Cors:
@@ -18,12 +14,6 @@ Globals:
       AllowHeaders: '''Content-Type'''
       AllowMethods: '''GET,OPTIONS'''
 Resources:
-  # API Gateway
-  RoomsApi:
-    Type: AWS::Serverless::HttpApi
-    Properties:
-      Name: !Sub "${NameSpace}api"
-      StageName: !Ref StageName
   # DynamoDB tables
   #  - TODO: initialize data (see Serverlesspresso: FillDatabasesCustomResource)
   RoomTable:
@@ -132,16 +122,28 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName:
               Ref: RoomReservationsTable
-      Events:
-        FindRoomReservationsApiEvent:
-          Type: Api
-          Properties:
-            ApiId: !Ref RoomsApi
-            Path: /api/v1/rooms/{room}/reservations
-            Method: GET
     Metadata:
       SamResourceId: FindRoomReservationFromApi
-Outputs:
-  HttpApiEndpoint:
-    Description: The default endpoint for the REST API.
-    Value: !Sub "https://${RoomsApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
+  # API Gateway
+  RoomsApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub "${NameSpace}api"
+      ProtocolType: HTTP
+      BasePath: /api/v1
+  FindReservationsIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref RoomsApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub  "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${NameSpace}room-reservation-api-find"
+  FindReservationsRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref RoomsApi
+      OperationName: FindReservations
+      RouteKey: GET /rooms/{room}/reservations
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref FindReservationsIntegration
