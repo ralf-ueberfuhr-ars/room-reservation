@@ -1,5 +1,7 @@
 # Room Reservation
 
+[![Application Code (CI)](https://github.com/ralf-ueberfuhr-ars/room-reservation/actions/workflows/gradle.yml/badge.svg)](https://github.com/ralf-ueberfuhr-ars/room-reservation/actions/workflows/gradle.yml)
+
 This is a small sample for a room reservation service that is implemented on top of the AWS stack. We use
 
  - [AWS Lambda](https://aws.amazon.com/de/lambda/) to implement the room reservation
