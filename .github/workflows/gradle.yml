@@ -30,6 +30,13 @@ jobs:
       with:
         gradle-version: 8.2.1
         arguments: -b 'app/build.gradle' build
+    - uses: actions/upload-artifact@v3
+      with:
+        name: built-artifacts
+        path: |
+          app/**/build/libs/*.jar
+          app/**/build/distributions/*.zip
+        if-no-files-found: error
 
   S3-deploy:
     needs:
@@ -37,8 +44,11 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
     steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: built-artifacts
     - name: Collect files for S3 upload
-      run: mkdir 'app/.publish-s3' && find 'app' -type f \( -name '*.jar' -o -name '*.zip' \) -exec cp -t 'app/.publish-s3' {} +
+      run: mkdir '.publish-s3' && find '.' -type f \( -name '*.jar' -o -name '*.zip' \) -exec cp -t '.publish-s3' {} +
     - name: Upload files to S3
       uses: jakejarvis/s3-sync-action@master
       with:
@@ -48,4 +58,4 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: 'eu-central-1'   # optional: defaults to us-east-1
-        SOURCE_DIR: 'app/.publish-s3'      # optional: defaults to entire repository
+        SOURCE_DIR: '.publish-s3'      # optional: defaults to entire repository
