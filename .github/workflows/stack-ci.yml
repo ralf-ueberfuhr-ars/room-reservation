@@ -9,7 +9,7 @@ on:
       s3Bucket:
         description: 'Name of the S3 Bucket to upload'
         required: true
-        default: ${{ secrets.AWS_S3_BUCKET }}
+        default: ${{ env.AWS_S3_BUCKET }}
       s3BucketDirectory:
         description: 'Sub Directory of the S3 Bucket to upload (use / to deploy to the root)'
         required: true
