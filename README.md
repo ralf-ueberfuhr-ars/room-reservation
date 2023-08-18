@@ -11,6 +11,7 @@ This is a small sample for a room reservation service that is implemented on top
  - [AWS API Gateway](https://aws.amazon.com/de/api-gateway/) to provide a REST API to find a reservation
  - [AWS CloudFormation](https://aws.amazon.com/de/cloudformation/) to automate the stack creation
    ([TerraForm](https://www.terraform.io/) could be used here too)
+ - [AWS CodePipeline](https://aws.amazon.com/de/codepipeline/) to have a CI/CD pipeline
 
 The following picture shows the whole architecture:
 
