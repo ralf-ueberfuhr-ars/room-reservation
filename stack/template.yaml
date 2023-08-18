@@ -19,8 +19,7 @@ Resources:
   RoomTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName:
-        Fn::Sub: ${NameSpace}rooms
+      TableName: !Sub "${NameSpace}rooms"
       AttributeDefinitions:
         - AttributeName: roomNr
           AttributeType: S
@@ -35,8 +34,7 @@ Resources:
   RoomReservationsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName:
-        Fn::Sub: ${NameSpace}room-reservations
+      TableName: !Sub "${NameSpace}room-reservations"
       AttributeDefinitions:
         - AttributeName: uuid
           AttributeType: S
@@ -51,16 +49,48 @@ Resources:
     Metadata:
       SamResourceId: RoomReservationsTable
       # TODO create GSI
+  # Lambda Layers
+  LambdaDependenciesLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: !Sub "${NameSpace}common-dependencies"
+      CompatibleRuntimes:
+        - java17
+      Content:
+        S3Bucket: "room-reservation"
+        S3Key: "app/lambdas-deps-layer.zip"
+  LambdaDomainLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: !Sub "${NameSpace}domain"
+      CompatibleRuntimes:
+        - java17
+      Content:
+        S3Bucket: "room-reservation"
+        S3Key: "app/domain-layer.zip"
+  PersistenceLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: !Sub "${NameSpace}persistence-aws-dynamodb"
+      CompatibleRuntimes:
+        - java17
+      Content:
+        S3Bucket: "room-reservation"
+        S3Key: "app/persistence-aws-dynamodb-layer.zip"
   # Lambda Functions
   CreateRoomReservation:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: ${NameSpace}room-reservation-create
+      FunctionName: !Sub "${NameSpace}room-reservation-create"
       CodeUri: s3://room-reservation/app/lambdas.jar
       Handler: de.ars.rooms.reservations.lambda.CreateRoomReservationHandler::handleRequest
       Runtime: java17
       Timeout: 15
       MemorySize: 512
+      Layers:
+        - !Ref LambdaDependenciesLayer
+        - !Ref LambdaDomainLayer
+        - !Ref PersistenceLayer
       Environment:
         Variables:
           ROOM_RESERVATIONS_TABLE:
@@ -71,3 +101,26 @@ Resources:
               Ref: RoomReservationsTable
     Metadata:
       SamResourceId: CreateRoomReservation
+  FindRoomReservationFromApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${NameSpace}room-reservation-api-find"
+      CodeUri: s3://room-reservation/app/lambdas.jar
+      Handler: de.ars.rooms.reservations.lambda.gateway.FindRoomReservationsHandler::handleRequest
+      Runtime: java17
+      Timeout: 15
+      MemorySize: 512
+      Layers:
+        - !Ref LambdaDependenciesLayer
+        - !Ref LambdaDomainLayer
+        - !Ref PersistenceLayer
+      Environment:
+        Variables:
+          ROOM_RESERVATIONS_TABLE:
+            Ref: RoomReservationsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              Ref: RoomReservationsTable
+    Metadata:
+      SamResourceId: FindRoomReservationFromApi
