@@ -130,6 +130,11 @@ Resources:
     Properties:
       Name: !Sub "${NameSpace}api"
       ProtocolType: HTTP
+  RoomsApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref RoomsApi
+      StageName: '$default'
   FindReservationsIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
