@@ -16,21 +16,21 @@ Globals:
 Resources:
   # DynamoDB tables
   #  - TODO: initialize data (see Serverlesspresso: FillDatabasesCustomResource)
-  RoomTable:
+  RoomsTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub "${NameSpace}rooms"
       AttributeDefinitions:
         - AttributeName: roomNr
           AttributeType: S
-#        - AttributeName: description
-#          AttributeType: S
+      #        - AttributeName: description
+      #          AttributeType: S
       KeySchema:
         - AttributeName: roomNr
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
     Metadata:
-      SamResourceId: RoomTable
+      SamResourceId: RoomsTable
   RoomReservationsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -38,10 +38,10 @@ Resources:
       AttributeDefinitions:
         - AttributeName: uuid
           AttributeType: S
-#        - AttributeName: date
-#          AttributeType: S
-#        - AttributeName: room
-#          AttributeType: S
+      #        - AttributeName: date
+      #          AttributeType: S
+      #        - AttributeName: room
+      #          AttributeType: S
       KeySchema:
         - AttributeName: uuid
           KeyType: HASH
@@ -167,4 +167,21 @@ Resources:
       ApiId: !Ref RoomsApi
       OperationName: FindReservations
       RouteKey: GET /api/v1/rooms/{room}/reservations
-      Target: !Join [ "/", ["integrations", !Ref FindReservationsIntegration]]
+      Target: !Join [ "/", [ "integrations", !Ref FindReservationsIntegration ] ]
+  # StepFunction
+  CreateReservationFlow:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionUri: s3://room-reservation/stack/create-reservation-flow.json
+      DefinitionSubstitutions:
+        RoomsTable:
+          Ref: RoomsTable
+        CreateRoomReservationLambda:
+          Ref: CreateRoomReservation
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName:
+              Ref: RoomsTable
+        - LambdaInvokePolicy:
+            FunctionName:
+              Ref: CreateRoomReservation

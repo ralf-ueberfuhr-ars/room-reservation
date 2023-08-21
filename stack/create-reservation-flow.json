@@ -1,0 +1,73 @@
+{
+  "StartAt": "Fetch Room Data",
+  "States": {
+    "Fetch Room Data": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:getItem",
+      "Parameters": {
+        "TableName": "${RoomsTable}",
+        "Key": {
+          "roomNr": {
+            "S.$": "$.request.room"
+          }
+        }
+      },
+      "Next": "Room Exists in DB?",
+      "ResultPath": "$.resolved.room"
+    },
+    "Room Exists in DB?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.resolved.room.Item",
+          "IsPresent": true,
+          "Next": "Create Room Reservation"
+        }
+      ],
+      "Default": "Fail"
+    },
+    "Create Room Reservation": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${CreateRoomReservationLambda}",
+        "Payload": {
+          "room.$": "$.request.room",
+          "date.$": "$.request.date"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Reservation Successful?",
+      "ResultPath": "$.resolved.reservation"
+    },
+    "Reservation Successful?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.resolved.reservation.Payload.status",
+          "StringEquals": "SUCCESSFUL",
+          "Next": "Success"
+        }
+      ],
+      "Default": "Fail"
+    },
+    "Success": {
+      "Type": "Succeed"
+    },
+    "Fail": {
+      "Type": "Fail"
+    }
+  }
+}
