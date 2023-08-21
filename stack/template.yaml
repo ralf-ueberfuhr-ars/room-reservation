@@ -118,6 +118,18 @@ Resources:
         Variables:
           ROOM_RESERVATIONS_TABLE:
             Ref: RoomReservationsTable
+      Events:
+        # TODO which is better? The API below or this?
+        # Does this declare OpenAPI, and the other not?
+        # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-api.html
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /api/v1/rooms/{room}/reservations
+            Method: GET
+            RequestParameters:
+              - method.request.path.room:
+                  Required: true
       Policies:
         - DynamoDBCrudPolicy:
             TableName:
@@ -142,11 +154,7 @@ Resources:
       ApiId: !Ref RoomsApi
       PayloadFormatVersion: '2.0'
       IntegrationType: AWS_PROXY
-      IntegrationUri:
-        Fn::GetAtt:
-          - "FindRoomReservationFromApi"
-          - "Arn"
-        #!Sub  "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${NameSpace}room-reservation-api-find"
+      IntegrationUri: !GetAtt FindRoomReservationFromApi.Arn
   PermissionForAPIGatewayToInvokeFindRoomReservationFromApi:
     Type: AWS::Lambda::Permission
     Properties:
@@ -159,7 +167,4 @@ Resources:
       ApiId: !Ref RoomsApi
       OperationName: FindReservations
       RouteKey: GET /api/v1/rooms/{room}/reservations
-      Target: !Join
-        - /
-        - - integrations
-          - !Ref FindReservationsIntegration
+      Target: !Join [ "/", ["integrations", !Ref FindReservationsIntegration]]
