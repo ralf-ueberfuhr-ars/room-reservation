@@ -122,8 +122,8 @@ Resources:
         # TODO which is better? The API below or this?
         # Does this declare OpenAPI, and the other not?
         # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-api.html
-        Api:
-          Type: HttpApi
+        FindReservationsFromApi:
+          Type: Api
           Properties:
             Path: /api/v1/rooms/{room}/reservations
             Method: GET
